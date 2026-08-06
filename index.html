@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正在前往 SUAT 🐱...</title>
+    <style>
+        body { 
+            background-color: #F7F5F0; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            font-family: 'Nunito', 'Noto Sans SC', sans-serif; 
+            color: #888; 
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .hint-text {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <p class="hint-text" id="hint">正在检测设备...</p>
+    
+    <script>
+        (function() {
+            const hintElement = document.getElementById('hint');
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+            const isSmallScreen = window.innerWidth < 768;
+            const isMobile = isMobileUA || isSmallScreen;
+
+            // 显示对应提示
+            if (isMobile) {
+                hintElement.textContent = '正在跳转到 📱 手机端';
+            } else {
+                hintElement.textContent = '正在跳转到 💻 电脑端';
+            }
+
+            // 短暂停留后跳转，让用户看清提示
+            setTimeout(() => {
+                if (isMobile) {
+                    window.location.replace('data/index_mobile.html');
+                } else {
+                    window.location.replace('data/index_pc.html');
+                }
+            }, 800);
+        })();
+    </script>
+</body>
+</html>
