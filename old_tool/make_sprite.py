@@ -36,8 +36,8 @@ from PIL import Image
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CATS_JSON = BASE_DIR / "data" / "cats.json"
-CLASSIFIED = BASE_DIR / "classified"
-STATIC = BASE_DIR / "static"
+CLASSIFIED = BASE_DIR / "data" / "classified"
+STATIC = BASE_DIR / "data" / "web" / "static"
 OUTPUT_IMG = STATIC / "sprite_thumb.jpg"
 OUTPUT_JS = STATIC / "sprite_map.js"
 

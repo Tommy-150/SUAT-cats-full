@@ -29,10 +29,12 @@ def get_resource_dir():
 
 BASE_DIR = get_base_dir()
 DATA_DIR = BASE_DIR / "data"
+WEB_DIR = DATA_DIR / "web"
+STATIC_DIR = WEB_DIR / "static"
 TAG_COLOR_PATH = DATA_DIR / "tag_color.json"
 BAN_WORDS_PATH = DATA_DIR / "ban_words.json"
 CATS_JSON_PATH = DATA_DIR / "cats.json"
-CLASSIFIED_DIR = BASE_DIR / "classified"
+CLASSIFIED_DIR = DATA_DIR / "classified"
 
 # ================= 图片处理 =================
 def auto_thumbnail(src_path, dst_path, size=300):
@@ -114,7 +116,7 @@ class ManagerAPI:
         try:
             self._sync_cat_photos()
             from PIL import Image as PILImage
-            sd = BASE_DIR / "static"
+            sd = STATIC_DIR
             sd.mkdir(parents=True, exist_ok=True)
             cats = self._cats
             if not cats:
@@ -130,7 +132,7 @@ class ManagerAPI:
                 positions[cat["id"]] = {"x": x, "y": y}
                 # 从文件系统推导主图（与 _build_cat_data 一致，不依赖 JSON 静态字段）
                 pic = cat.get("pic_name", "")
-                folder = BASE_DIR / "classified" / f"{cat['id']} {cat.get('name','')}"
+                folder = CLASSIFIED_DIR / f"{cat['id']} {cat.get('name','')}"
                 av = ""
                 if pic:
                     cand = folder / f"{pic}_01_thumb.jpg"
@@ -182,7 +184,7 @@ class ManagerAPI:
         name = cat["name"]
         pic = cat.get("pic_name", "")
         folder = CLASSIFIED_DIR / f"{cat_id} {name}"
-        folder_json = f"classified/{cat_id} {name}"
+        folder_json = f"data/classified/{cat_id} {name}"
 
         avatar = ""
         avatar_hd = ""
@@ -235,7 +237,7 @@ class ManagerAPI:
             name = cat.get("name", "")
             pic = cat.get("pic_name", "")
             folder = CLASSIFIED_DIR / f"{cid} {name}"
-            folder_json = f"classified/{cid} {name}"
+            folder_json = f"data/classified/{cid} {name}"
 
             avatar = cat.get("avatar", "")
             avatar_hd = cat.get("avatar_hd", "")
@@ -390,7 +392,7 @@ class ManagerAPI:
         auto_thumbnail(dst, thumb_dst)
         self._update_sprite()
         self._cleanup_temp()
-        return {"success": True, "seq": seq, "thumb": f"classified/{cat_id} {name}/{pic_name}_{seq:02d}_thumb.jpg"}
+        return {"success": True, "seq": seq, "thumb": f"data/classified/{cat_id} {name}/{pic_name}_{seq:02d}_thumb.jpg"}
 
     def open_file_dialog(self):
         result = webview.windows[0].create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=['Image Files (*.jpg;*.jpeg;*.png)'])
@@ -718,12 +720,12 @@ class ManagerAPI:
 def start_http_server():
     base_dir = get_base_dir()
     res_dir = get_resource_dir()
-    (base_dir / 'classified').mkdir(parents=True, exist_ok=True)
+    (base_dir / 'data' / 'classified').mkdir(parents=True, exist_ok=True)
 
     # 前端静态文件已被打包进 exe，从资源目录(_MEIPASS)读取，
     # 保证即使 exe 同目录缺少这些文件也能正常打开；
-    # 其余内容(classified/、data/ 等可编辑数据)仍从磁盘 base_dir 读写。
-    FRONTEND_FILES = {"app_manager.html", "marked.min.js"}
+    # 其余内容(data/classified/、data/web/ 等可编辑数据)仍从磁盘 base_dir 读写。
+    FRONTEND_FILES = {"data/web/app_manager.html", "data/web/marked.min.js"}
 
     class Handler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
@@ -731,7 +733,9 @@ def start_http_server():
         def translate_path(self, path):
             rel = path.split("?", 1)[0].split("#", 1)[0].lstrip("/")
             if rel in FRONTEND_FILES:
-                cand = res_dir / rel
+                # 打包后前端文件平铺在 _MEIPASS 根目录，去掉 data/web/ 前缀
+                name = rel.split("/", 2)[-1]
+                cand = res_dir / name
                 if cand.is_file():
                     return str(cand)
             return super().translate_path(path)
@@ -741,7 +745,7 @@ def start_http_server():
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    return f'http://127.0.0.1:{port}/app_manager.html', server
+    return f'http://127.0.0.1:{port}/data/web/app_manager.html', server
 
 # ================= 主入口 =================
 if __name__ == '__main__':

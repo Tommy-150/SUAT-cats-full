@@ -66,8 +66,8 @@ def build():
         "--distpath",str(BASE),"--workpath",str(BASE/"build"),
         "--collect-all","pythonnet","--collect-all","webview","--collect-all","ssl",
         "--hidden-import","clr",
-        "--add-data",f"{BASE/'app_manager.html'};.",
-        "--add-data",f"{BASE/'marked.min.js'};."]
+        "--add-data",f"{BASE/'data'/'web'/'app_manager.html'};.",
+        "--add-data",f"{BASE/'data'/'web'/'marked.min.js'};."]
     for dll in binaries:
         cmd += ["--add-binary", f"{dll};."]
     cmd.append(str(BASE/"app.py"))

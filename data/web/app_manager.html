@@ -637,7 +637,10 @@
     // ========== 全局变量 ==========
     let catsData = [];
     let dataVersion = 0;
-    function bust(url) { return url ? url + '?v=' + dataVersion : url; }
+    // 页面位于 data/web/ 下，图片相对路径(data/classified/...)需上溯两级；
+    // 绝对路径(http/data:/ 等)不加前缀。
+    function mediaUrl(url) { return url && !/^(data:|https?:|\/|\.\.\/)/.test(url) ? '../../' + url : url; }
+    function bust(url) { return url ? mediaUrl(url) + '?v=' + dataVersion : url; }
     let currentGenderFilter = 'all';
     let currentStatusFilter = 'all';
     let currentSort = 'default';
@@ -1031,10 +1034,10 @@
     function openCropEditor(cat, type, seq) {
         const picName = cat.pic_name;
         let src = '';
-        if (type === 'main') src = cat.avatar_hd || cat.avatar.replace('_thumb.jpg', '.jpg');
+        if (type === 'main') src = mediaUrl(cat.avatar_hd || cat.avatar.replace('_thumb.jpg', '.jpg'));
         else {
             const photo = cat.otherPhotos.find(p => p.seq == seq);
-            if (photo) src = photo.hd;
+            if (photo) src = mediaUrl(photo.hd);
         }
         if (!src) { alert('找不到高清原图'); return; }
         cropTarget = { catId: cat.id, picName, seq: parseInt(seq), src };
